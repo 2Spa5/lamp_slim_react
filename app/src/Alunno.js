@@ -1,48 +1,81 @@
 import { useState } from "react";
 
-export default function Alunno(alunno, popolaAlunni){
+export default function Alunno({alunno, popolaAlunni}){
 
-    const [contatore, setContatore] = useState[alunno.id];
-    const [inCancellazione, setInCancellazione] = useState[false];
-    const [richiestaConferma, setRichiestaConferma] = useState[false];
-
-    function incrementaVoto(){
-        setContatore[contatore + 1];
-    }
+    const [inCancellazione, setInCancellazione] = useState(false);
+    const [richiestaConferma, setRichiestaConferma] = useState(false);
+    const [inModifica, setModifica] = useState(false);
+    const [richiestaModifica, setRichiestaModifica] = useState(false);
 
     async function cancellaAlunno(){
-        setRichiestaConferma[false];
-        setInCancellazione[true];
-        const response = await fetch(`http://localhost:8080/alunni/${alunno.id}`, {method: "DELETE"});
+        setRichiestaConferma(false);
+        setInCancellazione(true);
+        await fetch(`http://localhost:8080/alunni/${alunno.id}`, {method: "DELETE"});
         popolaAlunni();
     }
 
-    function richiesta(){
-        setRichiestaConferma[true];
+    function richiestaC(){
+        setRichiestaConferma(true);
     }
 
-    function annulla(){
-        setRichiestaConferma[false];
+    function annullaC(){
+        setRichiestaConferma(false);
+    }
+
+    async function modificaAlunno(){
+        setRichiestaModifica(false);
+        setModifica(true);
+        await fetch(`http://localhost:8080/alunni/${alunno.id}`, {method: "PUT"});
+        popolaAlunni();
+    }
+
+    function richiestaM(){
+        setRichiestaModifica(true);
+    }
+
+    function annullaM(){
+        setRichiestaModifica(false);
     }
 
     return (
         <div>
-            {alunno.nome} {alunno.cognome}
-            <botton onClick={incrementaVoto}>{contatore}</botton>
-
+            
+            {
+                richiestaModifica ?
+                <input type="text" value={alunno.nome}/>
+                :
+                <span>{alunno.nome} {alunno.cognome}</span>
+            }
+            <span> </span>
             {
                 richiestaConferma ?
-                <span>Sei Sicuro?
+                <span> / Sei Sicuro?
                     <button onClick={cancellaAlunno}>Si</button>
-                    <button onClick={annulla}>No</button>
+                    <button onClick={annullaC}>No</button>
                 </span>
                 :
-                <button onClick={richiesta}>Cancella</button>
+                <button onClick={richiestaC}>Cancella</button>
             }
             {
                 inCancellazione &&
-                <span>in fase di cancellazione</span>
+                <span> In fase di cancellazione</span>
             }
+            <span> / </span>
+            {
+                richiestaModifica ?
+                <span>
+                    <button onClick={modificaAlunno}>Salva</button>
+                    <span> </span>
+                    <button onClick={annullaM}>Annulla</button>
+                </span>
+                :
+                <button onClick={richiestaM}>Modifica</button>
+            }
+            {
+                inModifica &&
+                <span> In fase di modifica</span>
+            }
+            <hr />
         </div>
     );
 }
