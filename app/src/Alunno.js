@@ -1,11 +1,15 @@
 import { useState } from "react";
 
-export default function Alunno({alunno, popolaAlunni}){
+export default function Alunno({alunno, popolaAlunni, setAlunno, setMostraForm}){
 
     const [inCancellazione, setInCancellazione] = useState(false);
     const [richiestaConferma, setRichiestaConferma] = useState(false);
+
     const [inModifica, setModifica] = useState(false);
     const [richiestaModifica, setRichiestaModifica] = useState(false);
+
+    const [nome, setNome] = useState(alunno.nome);
+    const [cognome, setCognome] = useState(alunno.cognome);
 
     async function cancellaAlunno(){
         setRichiestaConferma(false);
@@ -25,8 +29,13 @@ export default function Alunno({alunno, popolaAlunni}){
     async function modificaAlunno(){
         setRichiestaModifica(false);
         setModifica(true);
-        await fetch(`http://localhost:8080/alunni/${alunno.id}`, {method: "PUT"});
+        await fetch(`http://localhost:8080/alunni/${alunno.id}`,{
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({nome: nome, cognome: cognome})
+        });
         popolaAlunni();
+        setModifica(false);
     }
 
     function richiestaM(){
@@ -35,14 +44,26 @@ export default function Alunno({alunno, popolaAlunni}){
 
     function annullaM(){
         setRichiestaModifica(false);
+        popolaAlunni();
+    }
+
+    function gestisciInputNome(e){
+        setNome(e.target.value);
+    }
+
+    function gestisciInputCognome(e){
+        setCognome(e.target.value);
     }
 
     return (
-        <div>
-            
+        <div className="alunno">
             {
                 richiestaModifica ?
-                <input type="text" value={alunno.nome}/>
+                <span>
+                    <input type="text" value={nome} onChange={gestisciInputNome}/>
+                    <span> </span>
+                    <input type="text" value={cognome} onChange={gestisciInputCognome}/>
+                </span>
                 :
                 <span>{alunno.nome} {alunno.cognome}</span>
             }
@@ -51,6 +72,7 @@ export default function Alunno({alunno, popolaAlunni}){
                 richiestaConferma ?
                 <span> / Sei Sicuro?
                     <button onClick={cancellaAlunno}>Si</button>
+                    <span> </span>
                     <button onClick={annullaC}>No</button>
                 </span>
                 :
@@ -73,9 +95,17 @@ export default function Alunno({alunno, popolaAlunni}){
             }
             {
                 inModifica &&
-                <span> In fase di modifica</span>
+                <span> In fase di modifica </span>
             }
-            <hr />
+            <span> / </span>
+            {
+                <span>
+                    <span> </span>
+                    <button onClick={() => {setAlunno(alunno); setMostraForm(true);}}>Modifica2</button>
+                </span>
+            }
+            
+            <hr/>
         </div>
     );
 }

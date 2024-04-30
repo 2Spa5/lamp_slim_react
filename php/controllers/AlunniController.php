@@ -19,8 +19,10 @@ class AlunniController
     sleep(1);
     $mysqli_connection = new MySQLi('my_mariadb', 'root', 'ciccio', 'scuola');
     $data = json_decode($request->getBody(), true);
+    
     $n = $data["nome"];
     $c = $data["cognome"];
+
     $mysqli_connection->query("INSERT INTO alunni (nome, cognome) VALUES ('$n', '$c')");
     $response->getBody()->write(json_encode($data));
     return $response->withHeader("Content-type", "application/json")->withStatus(200);
@@ -32,8 +34,27 @@ class AlunniController
     $data = json_decode($request->getBody(), true);
     $n = $data["nome"];
     $c = $data["cognome"];
-    $mysqli_connection->query("UPDATE alunni SET nome = '$n', cognome = '$c' WHERE id = ". $args["id"]);
-    return $response->withHeader("Content-type", "application/json")->withStatus(201);
+    $id = $args["id"];
+    $kek = true;
+
+    if($n != ""){
+      $result = $mysqli_connection->query("UPDATE alunni SET nome = '$n' WHERE id = $id");
+      if(!$result)
+        $kek = false;
+    }
+
+    if($c != ""){
+      $result = $mysqli_connection->query("UPDATE alunni SET cognome = '$c' WHERE id = $id");
+      if(!$result)
+        $kek = false;
+    }
+
+    if($kek)
+      $code = 200;
+    else
+      $code = 500;
+    
+    return $response->withHeader("Content-type", "application/json")->withStatus($code);
   }
 
   public function delete(Request $request, Response $response, $args){
